@@ -3,7 +3,7 @@ const crypto = require('crypto');
 
 const WEBHOOK_SECRET = 'wylie-secret-key';
 
-const webhook = async (req, res) => {
+const paymentWebhook = async (req, res) => {
     try {
         // Verify signature (existing code)
         const receivedSignature = req.headers['x-webhook-signature'];
@@ -15,11 +15,11 @@ const webhook = async (req, res) => {
             .digest('hex');
         
         if (receivedSignature !== expectedSignature) {
-            console.log('❌ Invalid webhook signature!');
+            console.log('Invalid webhook signature!');
             return res.status(401).json({ message: 'Unauthorized - Invalid signature' });
         }
         
-        console.log('✅ Webhook signature verified!');
+        console.log('Webhook signature verified!');
         
         const { event, payment_id, status, transaction_id, recipient, amount, currency } = req.body;
 
@@ -29,7 +29,7 @@ const webhook = async (req, res) => {
         );
 
         if (contractorResult.rowCount === 0) {
-            console.log("❌ Unknown contractor:", recipient);
+            console.log("Unknown contractor:", recipient);
             return res.status(400).json({ message: "Unknown contractor" });
         }
 
@@ -40,7 +40,7 @@ const webhook = async (req, res) => {
             [contractorId, amount, status]
         );
         
-        console.log(`💾 Recorded payment for ${recipient}: $${amount}`);
+        console.log(`Recorded payment for ${recipient}: $${amount}`);
 
         return res.json({ message: "Webhook processed" });
         
@@ -50,4 +50,4 @@ const webhook = async (req, res) => {
     }
 };
 
-module.exports = { webhook };
+module.exports = paymentWebhook;
